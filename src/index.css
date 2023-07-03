@@ -12,7 +12,11 @@ body {
 }
 
 input, select {
-  color: #27374D;
+  /* color: #27374D !important; */
+  /* color: white; */
+}
+input {
+  padding-left: 0px;
 }
 
 code {
