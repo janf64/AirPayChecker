@@ -9,13 +9,6 @@ function App() {
   const [ot1_5Checked, setOT1_5Checked] = useState(false);
   const [ot2Checked, setOT2Checked] = useState(false);
   const [startDayChecked, setStartDayChecked] = useState(false);
-  const [pckTrlrChecked, setPckTrlrChecked] = useState(false);
-  const [drpTrlrChecked, setDrpTrlrChecked] = useState(false);
-  const [fuelTrkChecked, setFuelTrkChecked] = useState(false);
-  const [fuelTrlrChecked, setFuelTrlrChecked] = useState(false);
-  const [defChecked, setDefChecked] = useState(false);
-  const [scaleChecked, setScaleChecked] = useState(false);
-  const [endDayChecked, setEndDayChecked] = useState(false);
 
   const calculateTripCost = (distance) => {
     if (distance <= 160) {
@@ -51,8 +44,28 @@ function App() {
     ['N2o', 0.3],
   ];
 
+  const activities = [
+    { name: 'LoadTrlr ', duration: 60 },
+    { name: 'DrpTrctr ', duration: 10 },
+    { name: 'DelSetup ', duration: 20 },
+    { name: 'Fuel Trck ', duration: 10 },
+    { name: 'Scale ', duration: 5 },
+    { name: 'FuelTrlr ', duration: 5 },
+    { name: 'Def ', duration: 5 },
+    { name: 'DrpTrlr ', duration: 10 },
+    { name: 'StarDay ', duration: 35 },
+    { name: 'EndDay ', duration: 10 },
+    { name: 'PckTrctr ', duration: 10 },
+    { name: 'PckTrlr ', duration: 15 },
+    { name: 'PckCylTrlr ', duration: 25 },
+    { name: 'DelayMin ', duration: 1 },
+    { name: 'DelayMin10 ', duration: 10 },
+    { name: '1.5xDay ', duration: 1 },
+    { name: '2xDay ', duration: 1 },
+  ];
+
   const addTrip = () => {
-    setTrips([...trips, { distance: 0, product: '', metersDelivered: 0 }]);
+    setTrips([...trips, { distance: 0, product: '', metersDelivered: 0, selectedActivities: [] }]);
   };
 
   const updateTripDistance = (index, distance) => {
@@ -79,18 +92,25 @@ function App() {
     setTrips(updatedTrips);
   };
 
-  const calculateActivitiesCost = () => {
+  const toggleActivity = (tripIndex, activity) => {
+    const updatedTrips = [...trips];
+    const trip = updatedTrips[tripIndex];
+    const activityIndex = trip.selectedActivities.findIndex((a) => a.name === activity);
+
+    if (activityIndex !== -1) {
+      trip.selectedActivities[activityIndex].count++;
+    } else {
+      trip.selectedActivities.push({ name: activity, count: 1 });
+    }
+
+    setTrips(updatedTrips);
+  };
+
+  const calculateActivitiesCostForTrip = (trip) => {
     let activitiesCost = 0;
-    activitiesCost += ot1_5Checked ? activitiesCost * 0.5 : 0;
-    activitiesCost += ot2Checked ? activitiesCost : 0;
-    activitiesCost += pckTrlrChecked ? 0.1 : 0;
-    activitiesCost += drpTrlrChecked ? 0.1 : 0;
-    activitiesCost += fuelTrkChecked ? 0.1 : 0;
-    activitiesCost += fuelTrlrChecked ? 0.1 : 0;
-    activitiesCost += defChecked ? 0.1 : 0;
-    activitiesCost += scaleChecked ? 0.1 : 0;
-    activitiesCost += startDayChecked ? 22.73 : 0;
-    activitiesCost += endDayChecked ? 0.1 : 0;
+    activitiesCost += deliveryCount * 12.63;
+    activitiesCost += loadTrailerMinutes * 37.88;
+    activitiesCost += loadTrailerDelayMinutes * 0.6313;
 
     if (ot1_5Checked) {
       activitiesCost *= 1.5;
@@ -100,12 +120,56 @@ function App() {
       activitiesCost *= 2;
     }
 
+    if (startDayChecked) {
+      const startDayRatePerMinute = 0.003148;
+      activitiesCost += startDayRatePerMinute * 36;
+    }
+
+    trip.selectedActivities.forEach((activity) => {
+      const selectedActivity = activities.find((a) => a.name === activity.name);
+      const activityDuration = selectedActivity ? selectedActivity.duration * activity.count : 0;
+      activitiesCost += activityDuration * 0.6313; // 0.6313 cents per minute
+
+      
+    });
+
     return activitiesCost;
+  };
+
+  const calculateTotalCost = () => {
+    const totalCostPerKmLevel = {};
+    const totalCostPerProduct = {};
+
+    trips.forEach((trip) => {
+      const tripCost = calculateTripCost(trip.distance);
+      const productCost = trip.metersDelivered * calculateProductCost(trip.product);
+      const activitiesCost = calculateActivitiesCostForTrip(trip);
+      const tripTotalCost = tripCost + productCost + activitiesCost;
+
+      // Update total cost per km level
+      if (!totalCostPerKmLevel[tripCost]) {
+        totalCostPerKmLevel[tripCost] = tripTotalCost;
+      } else {
+        totalCostPerKmLevel[tripCost] += tripTotalCost;
+      }
+
+      // Update total cost per product
+      if (!totalCostPerProduct[trip.product]) {
+        totalCostPerProduct[trip.product] = tripTotalCost;
+      } else {
+        totalCostPerProduct[trip.product] += tripTotalCost;
+      }
+    });
+
+    return { totalCostPerKmLevel, totalCostPerProduct };
   };
 
   return (
     <div className="App">
       <div className="p-8">
+        {/* Comment: This is a brief comment at the top of the React page */}
+        <h1>Test Only</h1>
+
         {/* Trip inputs */}
         {trips.map((trip, index) => (
           <div key={index} className="block my-2">
@@ -133,173 +197,56 @@ function App() {
               value={trip.metersDelivered}
               onChange={(e) => updateTripMetersDelivered(index, e.target.value)}
             />
+
+            {/* Activity checkboxes */}
+            <div>
+              <label className="mr-3">Activities:</label>
+              {activities.map((activity, activityIndex) => (
+                <label key={activityIndex} className="mr-2">
+                  <input
+                    type="checkbox"
+                    checked={trip.selectedActivities.some((a) => a.name === activity.name)}
+                    onChange={() => toggleActivity(index, activity.name)}
+                  />
+                  {activity.name}
+                </label>
+              ))}
+            </div>
+
             <p>KM Cost: {(calculateTripCost(trip.distance)).toFixed(2)}</p>
             <p>Meters Cost: {(trip.metersDelivered * calculateProductCost(trip.product)).toFixed(2)}</p>
-            <button onClick={() => removeTrip(index)}>Remove</button>
+            <p>Activities Cost: {calculateActivitiesCostForTrip(trip).toFixed(2)}</p>
+            <p>
+                Selected Activities:{' '}
+              {trip.selectedActivities.map((activity) => `${activity.name} x${activity.count}`).join(', ')}
+            </p>
+
+            {/* Remove trip button */}
+            <button onClick={() => removeTrip(index)}>Remove Trip</button>
           </div>
         ))}
 
         {/* Add trip button */}
         <button onClick={addTrip}>Add Trip</button>
 
-        {/* Delivery Count */}
-        <div className="block my-4">
-          <label className="mr-3">Delivery Count</label>
-          <input
-            name="deliveryCount"
-            type="number"
-            value={deliveryCount}
-            onChange={(e) => setDeliveryCount(e.target.value)}
-          />
-        </div>
-
-        {/* Load Trailer Count */}
-        <div className="block my-4">
-          <label className="mr-3">Load Trailer</label>
-          <input
-            type="number"
-            value={loadTrailerMinutes}
-            onChange={(e) => setLoadTrailerMinutes(e.target.value)}
-          />
-        </div>
-
-        {/* Load Trailer Delay Over 60 Minutes */}
-        <div className="block my-4">
-          <label className="mr-3">Load Trailer Add (Minutes)</label>
-          <input
-            type="number"
-            value={loadTrailerDelayMinutes}
-            onChange={(e) => setLoadTrailerDelayMinutes(e.target.value)}
-          />
-        </div>
-
-        {/* OT1.5 Checkbox */}
-        <div className="block my-4">
-          <label>
-            <input
-              type="checkbox"
-              checked={ot1_5Checked}
-              onChange={() => setOT1_5Checked(!ot1_5Checked)}
-            />
-            OT1.5
-          </label>
-        </div>
-
-        {/* OT2 Checkbox */}
-        <div className="block my-4">
-          <label>
-            <input
-              type="checkbox"
-              checked={ot2Checked}
-              onChange={() => setOT2Checked(!ot2Checked)}
-            />
-            OT2
-          </label>
-        </div>
-
-        {/* Start Day Checkbox */}
-        <div className="block my-4">
-          <label>
-            <input
-              type="checkbox"
-              checked={startDayChecked}
-              onChange={() => setStartDayChecked(!startDayChecked)}
-            />
-            Start Day
-          </label>
-        </div>
-
-        {/* PckTrlr Checkbox */}
-        <div className="block my-4">
-          <label>
-            <input
-              type="checkbox"
-              checked={pckTrlrChecked}
-              onChange={() => setPckTrlrChecked(!pckTrlrChecked)}
-            />
-            PckTrlr
-          </label>
-        </div>
-
-        {/* DrpTrlr Checkbox */}
-        <div className="block my-4">
-          <label>
-            <input
-              type="checkbox"
-              checked={drpTrlrChecked}
-              onChange={() => setDrpTrlrChecked(!drpTrlrChecked)}
-            />
-            DrpTrlr
-          </label>
-        </div>
-
-        {/* Fuel Trk Checkbox */}
-        <div className="block my-4">
-          <label>
-            <input
-              type="checkbox"
-              checked={fuelTrkChecked}
-              onChange={() => setFuelTrkChecked(!fuelTrkChecked)}
-            />
-            Fuel Trk
-          </label>
-        </div>
-
-        {/* Fuel Trlr Checkbox */}
-        <div className="block my-4">
-          <label>
-            <input
-              type="checkbox"
-              checked={fuelTrlrChecked}
-              onChange={() => setFuelTrlrChecked(!fuelTrlrChecked)}
-            />
-            Fuel Trlr
-          </label>
-        </div>
-
-        {/* Def Checkbox */}
-        <div className="block my-4">
-          <label>
-            <input
-              type="checkbox"
-              checked={defChecked}
-              onChange={() => setDefChecked(!defChecked)}
-            />
-            Def
-          </label>
-        </div>
-
-        {/* Scale Checkbox */}
-        <div className="block my-4">
-          <label>
-            <input
-              type="checkbox"
-              checked={scaleChecked}
-              onChange={() => setScaleChecked(!scaleChecked)}
-            />
-            Scale
-          </label>
-        </div>
-
-        {/* End Day Checkbox */}
-        <div className="block my-4">
-          <label>
-            <input
-              type="checkbox"
-              checked={endDayChecked}
-              onChange={() => setEndDayChecked(!endDayChecked)}
-            />
-            End Day
-          </label>
-        </div>
-
-        
-
         {/* Total cost */}
-        <p>Total KM Cost: {trips.reduce((totalCost, trip) => totalCost + calculateTripCost(trip.distance), 0).toFixed(2)}</p>
-        <p>Total Meters Cost: {trips.reduce((totalCost, trip) => totalCost + trip.metersDelivered * calculateProductCost(trip.product), 0).toFixed(2)}</p>
-        <p>Activities Cost: {calculateActivitiesCost().toFixed(2)}</p>
-        <p>Deliveries: {deliveryCount}</p>
+        <div>
+          <h2>Future Use1</h2>
+          {Object.entries(calculateTotalCost().totalCostPerKmLevel).map(([kmCost, totalCost]) => (
+            <p key={kmCost}>
+              Km Cost {kmCost}: {totalCost.toFixed(2)}
+            </p>
+          ))}
+        </div>
+
+        <div>
+          <h2>Future Use2</h2>
+          {Object.entries(calculateTotalCost().totalCostPerProduct).map(([product, totalCost]) => (
+            <p key={product}>
+              Product {product}: {totalCost.toFixed(2)}
+            </p>
+          ))}
+        </div>
       </div>
     </div>
   );
