@@ -139,7 +139,7 @@ function App() {
     trip.selectedActivities.forEach((activity) => {
       const selectedActivity = activities.find((a) => a.name === activity.name);
       const activityDuration = selectedActivity ? selectedActivity.duration * activity.count : 0;
-      activitiesCost += activityDuration * 0.6313; // 0.6313 cents per minute
+      activitiesCost += activityDuration * 0.6313 * trip.ot; // 0.6313 cents per minute
 
       
     });
@@ -193,7 +193,7 @@ function App() {
             <h2 className="text-2xl font-bold">Trip {index+1}</h2>
             <div className="my-1 flex justify-between items-center">
               <label 
-                className="block text-md font-medium text-gray-900 dark:text-white"   
+                className="block text-md font-medium text-white-900 dark:text-white"   
               >Kilometers:</label>
               <input
                 className="border text-sm rounded-lg focus:ring-blue-500 block p-1.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white dark:focus:ring-blue-500 focus:border-blue-500 w-40"
@@ -205,7 +205,7 @@ function App() {
             </div>
 
             <div className="my-1 flex justify-between items-center">
-              <label className="block text-md font-medium text-gray-900 dark:text-white">Product: </label>
+              <label className="block text-md font-medium text-white-900 dark:text-white">Product: </label>
               <select
                 value={trip.product}
                 onChange={(e) => updateTripProduct(index, e.target.value)}
@@ -221,7 +221,7 @@ function App() {
             </div>
 
             <div className="my-1 flex justify-between items-center">
-              <label className="block text-md font-medium text-gray-900 dark:text-white">Meters Delivered:</label>
+              <label className="block text-md font-medium text-white-900 dark:text-white">Meters Delivered:</label>
               <input
                 type="number"
                 value={trip.metersDelivered}
