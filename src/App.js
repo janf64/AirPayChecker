@@ -151,6 +151,7 @@ function App() {
       const startDayRatePerMinute = 0.003148;
       activitiesCost += startDayRatePerMinute * 36;
     }
+    
 
     trip.selectedActivities.forEach((activity) => {
       const selectedActivity = activities.find((a) => a.name === activity.name);
@@ -171,7 +172,7 @@ function App() {
     trips.forEach((trip) => {
 			const distance = Number(trip.distance);
       const productCost = trip.metersDelivered * calculateProductCost(trip.product);
-      const activitiesCost = calculateActivitiesCostForTrip(trip) * trip.ot;
+      const activitiesCost = calculateActivitiesCostForTrip(trip);
 			totalActivityCost += activitiesCost;
 			const distRate = calculateDistanceRate(distance);
 
@@ -186,12 +187,13 @@ function App() {
 			if (trip.product !== '') {
 				// Update total cost per product
 				if (!totalCostPerProduct[trip.product]) {
-					totalCostPerProduct[trip.product] = productCost.toFixed(2);
+					totalCostPerProduct[trip.product] = Number(productCost.toFixed(2));
 				} else {
-					totalCostPerProduct[trip.product] += productCost.toFixed(2);
+					totalCostPerProduct[trip.product] += Number(productCost.toFixed(2));
 				}
 			}
     });
+
 
     setCalcTotalCost({
       tripKms,
@@ -394,6 +396,7 @@ function App() {
       </div>
     </div>
   );
-}
+            }
+
 
 export default App;
