@@ -206,7 +206,7 @@ function App() {
     <div className="App">
       <div className="p-4">
         {/* Comment: This is a brief comment at the top of the React page */}
-        <h1 className="text-4xl mb-4 font-bold">ALC Pay Checker v1.0</h1>
+        <h1 className="text-4xl mb-4 font-bold">ALC Pay Calculator v1.0</h1>
 
         {/* Trip inputs */}
         {trips.map((trip, index) => {
