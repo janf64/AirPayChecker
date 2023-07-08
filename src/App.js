@@ -13,16 +13,29 @@ function App() {
   const [calcTotalCost, setCalcTotalCost] = useState(null);
 
   const calculateTripCost = (distance) => {
+		const rate = calculateDistanceRate(distance); 
     if (distance <= 160) {
-      return 0.6418 * distance;
+      return rate * distance;
     } else if (distance <= 360) {
-      return 0.6037 * distance;
+      return rate * distance;
     } else if (distance <= 1000) {
-      return 0.5474 * distance;
+      return rate * distance;
     } else {
-      return 0.4904 * distance;
+      return rate * distance;
     }
   };
+
+	const calculateDistanceRate = (distance) => {
+		if (distance <= 160) {
+      return 0.6418;
+    } else if (distance <= 360) {
+      return 0.6037;
+    } else if (distance <= 1000) {
+      return 0.5474;
+    } else {
+      return 0.4904;
+    }
+	}
 
   const calculateProductCost = (product) => {
     if (product === 'Argon') {
@@ -62,7 +75,7 @@ function App() {
     { name: 'PckCylTrlr ', duration: 25 },
     { name: 'DelayMin ', duration: 1 },
     { name: 'DelayMin10 ', duration: 10 },
-    // // { name: '1.5xDay ', duration: 1 },
+    // { name: '1.5xDay ', duration: 1 },
     // { name: '2xDay ', duration: 1 },
   ];
 
@@ -72,7 +85,7 @@ function App() {
 
   const updateTripDistance = (index, distance) => {
     const updatedTrips = [...trips];
-    updatedTrips[index].distance = distance;
+    updatedTrips[index].distance = distance === '' ? '' : Number(distance);
     setTrips(updatedTrips);
   };
 
@@ -84,7 +97,7 @@ function App() {
 
   const updateTripMetersDelivered = (index, metersDelivered) => {
     const updatedTrips = [...trips];
-    updatedTrips[index].metersDelivered = metersDelivered;
+    updatedTrips[index].metersDelivered = metersDelivered === '' ? '' : Number(metersDelivered);
     setTrips(updatedTrips);
   };
 
@@ -106,6 +119,9 @@ function App() {
       trip.selectedActivities[activityIndex].count++;
     } else if (activityIndex !== -1 && count >= 1) {
       trip.selectedActivities[activityIndex].count--;
+			if (count == 1) {
+				trip.selectedActivities.splice(activityIndex, 1);
+			}
     }
 
     setTrips(updatedTrips);
@@ -148,36 +164,36 @@ function App() {
   };
 
   const calculateTotalCost = () => {
-    console.log('test');
-    const totalCostPerKmLevel = [];
+    const tripKms = {};
     const totalCostPerProduct = {};
+		let totalActivityCost = 0;
 
     trips.forEach((trip) => {
-      const tripCost = calculateTripCost(trip.distance);
       const productCost = trip.metersDelivered * calculateProductCost(trip.product);
       const activitiesCost = calculateActivitiesCostForTrip(trip) * trip.ot;
-      const tripTotalCost = tripCost + productCost + activitiesCost;
+			totalActivityCost += activitiesCost;
+			const distRate = calculateDistanceRate(trip.distance);
 
-      // Update total cost per km level
-      totalCostPerKmLevel.push(tripCost + activitiesCost);
-      // if (!totalCostPerKmLevel[tripCost]) {
-        // totalCostPerKmLevel[tripCost] = tripTotalCost;
-      // } else {
-        // totalCostPerKmLevel[tripCost] += tripTotalCost;
-      // }
+			if (!tripKms[distRate]) {
+				tripKms[distRate] = distRate * trip.distance;
+			} else {
+				tripKms[distRate] += distRate * trip.distance;
+			}
 
-      // Update total cost per product
-      if (!totalCostPerProduct[trip.product]) {
-        totalCostPerProduct[trip.product] = tripTotalCost;
-      } else {
-        totalCostPerProduct[trip.product] += tripTotalCost;
-      }
+			if (trip.product !== '') {
+				// Update total cost per product
+				if (!totalCostPerProduct[trip.product]) {
+					totalCostPerProduct[trip.product] = productCost.toFixed(2);
+				} else {
+					totalCostPerProduct[trip.product] += productCost.toFixed(2);
+				}
+			}
     });
 
-    console.log('test2', calcTotalCost);
     setCalcTotalCost({
-      totalCostPerKmLevel,
-      totalCostPerProduct
+      tripKms,
+      totalCostPerProduct,
+			totalActivityCost
     });
   };
 
@@ -188,7 +204,13 @@ function App() {
         <h1 className="text-4xl mb-4 font-bold">Air Pay Checker</h1>
 
         {/* Trip inputs */}
-        {trips.map((trip, index) => (
+        {trips.map((trip, index) => {
+				const kmCost = calculateTripCost(trip.distance).toFixed(2);
+				const meterCost = (trip.metersDelivered * calculateProductCost(trip.product)).toFixed(2);
+				const activityCost = calculateActivitiesCostForTrip(trip).toFixed(2);
+				const totalCost = Number(kmCost) + Number(meterCost) + Number(activityCost);
+
+				return (
           <div key={index} className="block my-2">
             <h2 className="text-2xl font-bold">Trip {index+1}</h2>
             <div className="my-1 flex justify-between items-center">
@@ -248,7 +270,7 @@ function App() {
                       </button>
                       <input 
                         type="number"
-                        class="outline-none focus:outline-none text-center w-full bg-gray-300 font-semibold text-md hover:text-black focus:text-black  md:text-basecursor-default flex items-center text-gray-700"
+                        class="rounded-none outline-none focus:outline-none text-center w-full bg-gray-300 font-semibold text-md hover:text-black focus:text-black  md:text-basecursor-default flex items-center text-gray-700"
                         name="custom-input-number"
                         value={selectedActivity ? selectedActivity.count : '0'}
                         // onChange=""
@@ -304,14 +326,17 @@ function App() {
             </div>
 
             <p className='mt-2'>
-              <span className="font-bold">KM Cost:</span> {(calculateTripCost(trip.distance)).toFixed(2)}
+              <span className="font-bold">KM Cost:</span> {kmCost}
             </p>
             <p>
-              <span className="font-bold">Meters Cost:</span> {(trip.metersDelivered * calculateProductCost(trip.product)).toFixed(2)}
+              <span className="font-bold">Meters Cost:</span> {meterCost}
             </p>
             <p>
-              <span className="font-bold">Activities Cost:</span> {calculateActivitiesCostForTrip(trip).toFixed(2)}
+              <span className="font-bold">Activities Cost:</span> {activityCost}
             </p>
+						<p>
+							<span className="font-bold">Total:</span> {totalCost.toFixed(2)}
+						</p>
             <p>
               <span className="font-bold">Selected Activities:{' '}</span>
               {trip.selectedActivities.map((activity) => `${activity.name} x${activity.count}`).join(', ')}
@@ -323,7 +348,7 @@ function App() {
               className="bg-emerald-600 text- py-1 px-3 text-lg mt-2 mb-4"  
             >Remove Trip</button>
           </div>
-        ))}
+        )})}
 
         {/* Add trip button */}
         <button
@@ -336,25 +361,29 @@ function App() {
           onClick={() => calculateTotalCost()}
           className="bg-emerald-600 block py-1 px-3 text-lg my-2"
         >Calculate Totals</button>
-        
+
         {calcTotalCost && (
           <div>
-            <h2>Total cost for distance and activities: </h2>
-            {calcTotalCost.totalCostPerKmLevel.map((item, idx) => {
-              <p key={idx}>test</p>
-            })}
-            {calcTotalCost.totalCostPerKmLevel.map((item, idx) => {
-              <p key={idx}>
-                <span className="font-bold">Trip {idx+1}: </span> {item.toFixed(2)}
-              </p> 
+            {Object.entries(calcTotalCost.tripKms).map((kms, idx) => {
+							return (
+								<p key={idx}>
+								 	<span className="font-bold">Driver KM @ {kms[0]}: </span> {kms[1].toFixed(2)}
+								</p>
+							)
             })}
 
-            <h2>Total cost per product: </h2>
-            {Object.entries(calcTotalCost.totalCostPerProduct).map((product, totalCost) => {
-              <p key={product}>
-                <span className="font-bold">{product}: </span> {totalCost.toFixed(2)}
-              </p> 
-            })}
+            {Object.entries(calcTotalCost.totalCostPerProduct).map((product, idx) => {
+							const rate = calculateProductCost(product[0]);
+
+							if (product.length < 2) return <></>;
+							return (
+								<p key={idx}>
+									<span className="font-bold">Pumping Rate {product[0]} @ {rate}: </span> {Number(product[1]).toFixed(2)}
+								</p>
+							)
+						})}
+
+						<p><span className="font-bold">Activity Minutes: </span>{calcTotalCost.totalActivityCost}</p>
           </div>
         )}
       </div>
