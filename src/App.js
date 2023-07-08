@@ -70,9 +70,9 @@ function App() {
     { name: 'DrpTrlr ', duration: 10 },
     { name: 'StarDay ', duration: 35 },
     { name: 'EndDay ', duration: 10 },
-    { name: 'PckTrctr ', duration: 10 },
-    { name: 'PckTrlr ', duration: 15 },
-    { name: 'PckCylTrlr ', duration: 25 },
+    { name: 'PupTrctr ', duration: 10 },
+    { name: 'PupTrlr ', duration: 15 },
+    { name: 'PupCylTrlr ', duration: 25 },
     { name: 'DelayMin ', duration: 1 },
     { name: 'DelayMin10 ', duration: 10 },
     // { name: '1.5xDay ', duration: 1 },
@@ -383,7 +383,7 @@ function App() {
 							if (product.length < 2) return <></>;
 							return (
 								<p key={idx}>
-									<span className="font-bold">Pumping {product[0]} @ {rate}: </span> {Number(product[1]).toFixed(2)}
+									<span className="font-bold">Pumped {product[0]} @ {rate}: </span> {Number(product[1]).toFixed(2)}
 								</p>
 							)
 						})}
