@@ -169,15 +169,18 @@ function App() {
 		let totalActivityCost = 0;
 
     trips.forEach((trip) => {
+			const distance = Number(trip.distance);
       const productCost = trip.metersDelivered * calculateProductCost(trip.product);
       const activitiesCost = calculateActivitiesCostForTrip(trip) * trip.ot;
 			totalActivityCost += activitiesCost;
-			const distRate = calculateDistanceRate(trip.distance);
+			const distRate = calculateDistanceRate(distance);
 
-			if (!tripKms[distRate]) {
-				tripKms[distRate] = distRate * trip.distance;
-			} else {
-				tripKms[distRate] += distRate * trip.distance;
+			if (distance !== 0) {
+				if (!tripKms[distRate]) {
+					tripKms[distRate] = distRate * distance;
+				} else {
+					tripKms[distRate] += distRate * distance;
+				}
 			}
 
 			if (trip.product !== '') {
@@ -378,12 +381,14 @@ function App() {
 							if (product.length < 2) return <></>;
 							return (
 								<p key={idx}>
-									<span className="font-bold">Pumping Rate {product[0]} @ {rate}: </span> {Number(product[1]).toFixed(2)}
+									<span className="font-bold">Pumping {product[0]} @ {rate}: </span> {Number(product[1]).toFixed(2)}
 								</p>
 							)
 						})}
 
-						<p><span className="font-bold">Activity Minutes: </span>{calcTotalCost.totalActivityCost}</p>
+						{calcTotalCost.totalActivityCost != 0 && (
+							<p><span className="font-bold">Activity Minutes: </span>{calcTotalCost.totalActivityCost.toFixed(2)}</p>
+						)}
           </div>
         )}
       </div>
