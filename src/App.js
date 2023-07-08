@@ -340,7 +340,7 @@ function App() {
               <span className="font-bold">Activities Cost:</span> {activityCost}
             </p>
 						<p>
-							<span className="font-bold">Total:</span> {totalCost.toFixed(2)}
+							<span className="font-bold">Trip Total:</span> {totalCost.toFixed(2)}
 						</p>
             <p>
               <span className="font-bold">Selected Activities:{' '}</span>
