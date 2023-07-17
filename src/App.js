@@ -27,11 +27,11 @@ function App() {
 
 	const calculateDistanceRate = (distance) => {
 		if (distance <= 160) {
-      return 0.6418;
+      return 0.651;
     } else if (distance <= 360) {
-      return 0.6037;
+      return 0.6125;
     } else if (distance <= 1000) {
-      return 0.5474;
+      return 0.5554;
     } else {
       return 0.4904;
     }
@@ -39,13 +39,13 @@ function App() {
 
   const calculateProductCost = (product) => {
     if (product === 'Argon') {
-      return 0.004539;
+      return 0.0046;
     } else if (product === 'CO2') {
       return 0.003102;
     } else if (product === 'Oxygen' || product === 'Nitrogen') {
-      return 0.003524;
+      return 0.0036;
     } else if (product === 'N2o') {
-      return 0.003148;
+      return 0.0036;
     } else {
       return 0;
     }
@@ -119,7 +119,7 @@ function App() {
       trip.selectedActivities[activityIndex].count++;
     } else if (activityIndex !== -1 && count >= 1) {
       trip.selectedActivities[activityIndex].count--;
-			if (count == 1) {
+			if (count === 1) {
 				trip.selectedActivities.splice(activityIndex, 1);
 			}
     }
@@ -300,7 +300,7 @@ function App() {
                   id={"ot0" + index}
                   type="radio"
                   value={1}
-                  checked={trip.ot == 1}
+                  checked={trip.ot === 1}
                   onChange={() => updateOT(index, 1)}
                 />
                 <label for={"ot0" + index}>No Overtime</label>
@@ -312,7 +312,7 @@ function App() {
                   id={"ot1" + index}
                   type="radio"
                   value={1.5}
-                  checked={trip.ot == 1.5}
+                  checked={trip.ot === 1.5}
                   onChange={() => updateOT(index, 1.5)}
                 />
                 <label for={"ot1" + index}>Overtime 1.5x</label>
@@ -323,7 +323,7 @@ function App() {
                   name={"ot" + index}
                   id={"ot2" + index}
                   type="radio"
-                  checked={trip.ot == 2}
+                  checked={trip.ot === 2}
                   onChange={() => updateOT(index, 2)}
                 />
                 <label for={"ot2" + index}>Overtime 2x</label>
@@ -388,7 +388,7 @@ function App() {
 							)
 						})}
 
-						{calcTotalCost.totalActivityCost != 0 && (
+						{calcTotalCost.totalActivityCost !== 0 && (
 							<p><span className="font-bold">Activity Minutes: </span>{calcTotalCost.totalActivityCost.toFixed(2)}</p>
 						)}
           </div>
