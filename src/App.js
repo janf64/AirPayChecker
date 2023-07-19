@@ -27,11 +27,11 @@ function App() {
 
 	const calculateDistanceRate = (distance) => {
 		if (distance <= 160) {
-      return 0.651;
+      return 0.6418;
     } else if (distance <= 360) {
-      return 0.6125;
+      return 0.6037;
     } else if (distance <= 1000) {
-      return 0.5554;
+      return 0.5474;
     } else {
       return 0.4904;
     }
@@ -39,13 +39,13 @@ function App() {
 
   const calculateProductCost = (product) => {
     if (product === 'Argon') {
-      return 0.0046;
+      return 0.004539;
     } else if (product === 'CO2') {
       return 0.003102;
     } else if (product === 'Oxygen' || product === 'Nitrogen') {
-      return 0.0036;
+      return 0.003524;
     } else if (product === 'N2o') {
-      return 0.0036;
+      return 0.003524;
     } else {
       return 0;
     }
