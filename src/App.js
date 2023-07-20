@@ -45,7 +45,7 @@ function App() {
     } else if (product === 'Oxygen' || product === 'Nitrogen') {
       return 0.003524;
     } else if (product === 'N2o') {
-      return 0.003524;
+      return 0.003148;
     } else {
       return 0;
     }
