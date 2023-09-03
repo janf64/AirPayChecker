@@ -10,6 +10,15 @@ body {
   background-color: #27374D;
   color: white;
 }
+@media print {
+  body {
+    background-color: white;
+    color: black;
+  }
+  .hide-from-print {
+    display: none;
+  }
+}
 
 input, select {
   /* color: #27374D !important; */
