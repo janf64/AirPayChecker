@@ -209,7 +209,7 @@ function App() {
     <div className="App">
       <div className="p-4">
         <div className="hide-from-print">
-          <h1 className="text-4xl mb-4 font-bold">ALC Pay Calculator v1.0</h1>
+          <h1 className="text-4xl mb-4 font-bold">ALC Pay Calculator v1.1</h1>
 
           {/* Trip inputs */}
           {trips.map((trip, index) => {
