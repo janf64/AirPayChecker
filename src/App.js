@@ -4,7 +4,6 @@ import './App.css';
 function App() {
   const [trips, setTrips] = useState([]);
   const [deliveryCount, setDeliveryCount] = useState(0);
-  const [metersDelivered, setMetersDelivered] = useState(0);
   const [loadTrailerMinutes, setLoadTrailerMinutes] = useState(0);
   const [loadTrailerDelayMinutes, setLoadTrailerDelayMinutes] = useState(0);
   const [ot1_5Checked, setOT1_5Checked] = useState(false);
@@ -178,9 +177,13 @@ function App() {
 
 			if (distance !== 0) {
 				if (!tripKms[distRate]) {
-					tripKms[distRate] = distRate * distance;
+          tripKms[distRate] = {
+            distance: distance,
+            cost: distRate * distance,
+          }
 				} else {
-					tripKms[distRate] += distRate * distance;
+          tripKms[distRate].distance += distance;
+          tripKms[distRate].cost += distRate * distance;
 				}
 			}
 
@@ -198,7 +201,7 @@ function App() {
     setCalcTotalCost({
       tripKms,
       totalCostPerProduct,
-			totalActivityCost
+			totalActivityCost,
     });
   };
 
@@ -372,7 +375,7 @@ function App() {
             {Object.entries(calcTotalCost.tripKms).map((kms, idx) => {
 							return (
 								<p key={idx}>
-								 	<span className="font-bold">Driver KM @ {kms[0]}: </span> {kms[1].toFixed(2)}
+								 	<span className="font-bold">Driver {kms[1].distance} km @ {kms[0]}: </span> {kms[1].cost.toFixed(2)}
 								</p>
 							)
             })}
@@ -396,7 +399,7 @@ function App() {
       </div>
     </div>
   );
-            }
+}
 
 
 export default App;
