@@ -26,25 +26,25 @@ function App() {
 
 	const calculateDistanceRate = (distance) => {
 		if (distance <= 160) {
-      return 0.6418;
+      return 0.7064;
     } else if (distance <= 360) {
-      return 0.6037;
+      return 0.6646;
     } else if (distance <= 1000) {
-      return 0.5474;
+      return 0.6027;
     } else {
-      return 0.4904;
+      return 0.54;
     }
 	}
 
   const calculateProductCost = (product) => {
     if (product === 'Argon') {
-      return 0.004539;
+      return 0.004996;
     } else if (product === 'CO2') {
-      return 0.003102;
+      return 0.003413;
     } else if (product === 'Oxygen' || product === 'Nitrogen') {
-      return 0.003524;
+      return 0.00388;
     } else if (product === 'N2o') {
-      return 0.003148;
+      return 0.003466;
     } else {
       return 0;
     }
@@ -134,9 +134,9 @@ function App() {
 
   const calculateActivitiesCostForTrip = (trip) => {
     let activitiesCost = 0;
-    activitiesCost += deliveryCount * 12.63;
-    activitiesCost += loadTrailerMinutes * 37.88;
-    activitiesCost += loadTrailerDelayMinutes * 0.6313;
+    activitiesCost += deliveryCount * 13.61;
+    activitiesCost += loadTrailerMinutes * 40.82;
+    activitiesCost += loadTrailerDelayMinutes * 0.6803;
 
     if (ot1_5Checked) {
       activitiesCost *= 1.5;
@@ -147,7 +147,7 @@ function App() {
     }
 
     if (startDayChecked) {
-      const startDayRatePerMinute = 0.003148;
+      const startDayRatePerMinute = 0.6803;
       activitiesCost += startDayRatePerMinute * 36;
     }
     
@@ -155,7 +155,7 @@ function App() {
     trip.selectedActivities.forEach((activity) => {
       const selectedActivity = activities.find((a) => a.name === activity.name);
       const activityDuration = selectedActivity ? selectedActivity.duration * activity.count : 0;
-      activitiesCost += activityDuration * 0.6313 * trip.ot; // 0.6313 cents per minute
+      activitiesCost += activityDuration * 0.6803 * trip.ot; // 0.6313 cents per minute
 
       
     });
@@ -209,7 +209,7 @@ function App() {
     <div className="App">
       <div className="p-4">
         <div className="hide-from-print">
-          <h1 className="text-4xl mb-4 font-bold">ALC Pay Calculator v1.1</h1>
+          <h1 className="text-4xl mb-4 font-bold">ALC Pay Calculator v1.2 10/23 rates</h1>
 
           {/* Trip inputs */}
           {trips.map((trip, index) => {
