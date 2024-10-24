@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/AirPayChecker/static/css/main.2a713989.css",
-    "main.js": "/AirPayChecker/static/js/main.a5173cf5.js",
+    "main.js": "/AirPayChecker/static/js/main.f2f90edf.js",
     "static/js/787.a174f9e5.chunk.js": "/AirPayChecker/static/js/787.a174f9e5.chunk.js",
     "index.html": "/AirPayChecker/index.html",
     "main.2a713989.css.map": "/AirPayChecker/static/css/main.2a713989.css.map",
-    "main.a5173cf5.js.map": "/AirPayChecker/static/js/main.a5173cf5.js.map",
+    "main.f2f90edf.js.map": "/AirPayChecker/static/js/main.f2f90edf.js.map",
     "787.a174f9e5.chunk.js.map": "/AirPayChecker/static/js/787.a174f9e5.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.2a713989.css",
-    "static/js/main.a5173cf5.js"
+    "static/js/main.f2f90edf.js"
   ]
 }
