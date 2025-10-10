@@ -209,192 +209,252 @@ function App() {
     <div className="App">
       <div className="p-4">
         <div className="hide-from-print">
-          <h1 className="text-4xl mb-4 font-bold">ALC Pay Calculator v1.2 10/23 rates</h1>
+          <h1 className="text-4xl mb-4 font-bold">
+            ALC Pay Calculator 10/23 rates
+          </h1>
 
           {/* Trip inputs */}
           {trips.map((trip, index) => {
-          const kmCost = calculateTripCost(trip.distance).toFixed(2);
-          const meterCost = (trip.metersDelivered * calculateProductCost(trip.product)).toFixed(2);
-          const activityCost = calculateActivitiesCostForTrip(trip).toFixed(2);
-          const totalCost = Number(kmCost) + Number(meterCost) + Number(activityCost);
+            const kmCost = calculateTripCost(trip.distance).toFixed(2);
+            const meterCost = (
+              trip.metersDelivered * calculateProductCost(trip.product)
+            ).toFixed(2);
+            const activityCost =
+              calculateActivitiesCostForTrip(trip).toFixed(2);
+            const totalCost =
+              Number(kmCost) + Number(meterCost) + Number(activityCost);
 
-          return (
-            <div key={index} className="block my-2">
-              <h2 className="text-2xl font-bold">Trip {index+1}</h2>
-              <div className="my-1 flex justify-between items-center">
-                <label 
-                  className="block text-md font-medium text-white-900 dark:text-white"   
-                >Kilometers:</label>
-                <input
-                  className="border text-sm rounded-lg focus:ring-blue-500 block p-1.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white dark:focus:ring-blue-500 focus:border-blue-500 w-40"
-                  type="number"
-                  value={trip.distance}
-                  onChange={(e) => updateTripDistance(index, e.target.value)}
-                  placeholder="0"
-                />
-              </div>
+            return (
+              <div key={index} className="block my-2">
+                <h2 className="text-2xl font-bold">Trip {index + 1}</h2>
+                <div className="my-1 flex justify-between items-center">
+                  <label className="block text-md font-medium text-white-900 dark:text-white">
+                    Kilometers:
+                  </label>
+                  <input
+                    className="border text-sm rounded-lg focus:ring-blue-500 block p-1.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white dark:focus:ring-blue-500 focus:border-blue-500 w-40"
+                    type="number"
+                    value={trip.distance}
+                    onChange={(e) => updateTripDistance(index, e.target.value)}
+                    placeholder="0"
+                  />
+                </div>
 
-              <div className="my-1 flex justify-between items-center">
-                <label className="block text-md font-medium text-white-900 dark:text-white">Product: </label>
-                <select
-                  value={trip.product}
-                  onChange={(e) => updateTripProduct(index, e.target.value)}
-                  className="border text-sm rounded-lg focus:ring-blue-500 block p-1.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white dark:focus:ring-blue-500 focus:border-blue-500 w-40"
-                >
-                  <option value="">Select Product</option>
-                  {products.map((opt, productIndex) => (
-                    <option key={productIndex} value={opt[0]}>
-                      {opt[0]}
-                    </option>
-                  ))}
-                </select>
-              </div>
+                <div className="my-1 flex justify-between items-center">
+                  <label className="block text-md font-medium text-white-900 dark:text-white">
+                    Product:{' '}
+                  </label>
+                  <select
+                    value={trip.product}
+                    onChange={(e) => updateTripProduct(index, e.target.value)}
+                    className="border text-sm rounded-lg focus:ring-blue-500 block p-1.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white dark:focus:ring-blue-500 focus:border-blue-500 w-40"
+                  >
+                    <option value="">Select Product</option>
+                    {products.map((opt, productIndex) => (
+                      <option key={productIndex} value={opt[0]}>
+                        {opt[0]}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-              <div className="my-1 flex justify-between items-center">
-                <label className="block text-md font-medium text-white-900 dark:text-white">Meters Delivered:</label>
-                <input
-                  type="number"
-                  value={trip.metersDelivered}
-                  placeholder="0"
-                  onChange={(e) => updateTripMetersDelivered(index, e.target.value)}
-                  className="border text-sm rounded-lg focus:ring-blue-500 block p-1.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white dark:focus:ring-blue-500 focus:border-blue-500 w-40"
-                />
-              </div>
-              
-              {/* Activity checkboxes */}
-              <div className="flex flex-wrap">
-                <label className="mt-2 mb-1.5 text-xl font-bold w-full">Activities:</label>
-                {activities.map((activity, activityIndex) => {
-                  const selectedActivity = trip.selectedActivities.find((a) => a.name === activity.name);
-                  const padding = activityIndex % 2 ? '' : 'pr-2';
+                <div className="my-1 flex justify-between items-center">
+                  <label className="block text-md font-medium text-white-900 dark:text-white">
+                    Meters Delivered:
+                  </label>
+                  <input
+                    type="number"
+                    value={trip.metersDelivered}
+                    placeholder="0"
+                    onChange={(e) =>
+                      updateTripMetersDelivered(index, e.target.value)
+                    }
+                    className="border text-sm rounded-lg focus:ring-blue-500 block p-1.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white dark:focus:ring-blue-500 focus:border-blue-500 w-40"
+                  />
+                </div>
 
-                  return (
-                    <div class={"custom-number-input flex items-center w-1/2 " + padding}>
-                      <label key={activityIndex} for="custom-input-number" class="w-24 h-4 mr-2 text-sm font-semibold">{activity.name}
-                      </label>
-                      <div class="flex flex-row h-8 rounded-lg relative bg-transparent mt-1 w-24">
-                        <button onClick={() => toggleActivity(index, activity.name, 'sub')} class=" bg-gray-300 text-gray-600 hover:text-gray-700 hover:bg-gray-400 h-full w-20 rounded-l cursor-pointer outline-none">
-                          <span class="m-auto text-2xl font-thin">−</span>
-                        </button>
-                        <input 
-                          type="number"
-                          class="rounded-none outline-none focus:outline-none text-center w-full bg-gray-300 font-semibold text-md hover:text-black focus:text-black  md:text-basecursor-default flex items-center text-gray-700"
-                          name="custom-input-number"
-                          value={selectedActivity ? selectedActivity.count : '0'}
-                          // onChange=""
-                          // value="0"
-                          readOnly={true}
-                        ></input>
-                      <button onClick={() => toggleActivity(index, activity.name, 'add')} class="bg-gray-300 text-gray-600 hover:text-gray-700 hover:bg-gray-400 h-full w-20 rounded-r cursor-pointer">
-                        <span class="m-auto text-2xl font-thin">+</span>
-                      </button>
+                {/* Activity checkboxes */}
+                <div className="flex flex-wrap">
+                  <label className="mt-2 mb-1.5 text-xl font-bold w-full">
+                    Activities:
+                  </label>
+                  {activities.map((activity, activityIndex) => {
+                    const selectedActivity = trip.selectedActivities.find(
+                      (a) => a.name === activity.name
+                    );
+                    const padding = activityIndex % 2 ? '' : 'pr-2';
+
+                    return (
+                      <div
+                        className={
+                          'custom-number-input flex items-center w-1/2 ' +
+                          padding
+                        }
+                      >
+                        <label
+                          key={activityIndex}
+                          for="custom-input-number"
+                          className="w-24 h-4 mr-2 text-sm font-semibold"
+                        >
+                          {activity.name}
+                        </label>
+                        <div className="flex flex-row h-8 rounded-lg relative bg-transparent mt-1 w-24">
+                          <button
+                            onClick={() =>
+                              toggleActivity(index, activity.name, 'sub')
+                            }
+                            className=" bg-gray-300 text-gray-600 hover:text-gray-700 hover:bg-gray-400 h-full w-20 rounded-l cursor-pointer outline-none"
+                          >
+                            <span className="m-auto text-2xl font-thin">−</span>
+                          </button>
+                          <input
+                            type="number"
+                            className="rounded-none outline-none focus:outline-none text-center w-full bg-gray-300 font-semibold text-md hover:text-black focus:text-black  md:text-basecursor-default flex items-center text-gray-700"
+                            name="custom-input-number"
+                            value={
+                              selectedActivity ? selectedActivity.count : '0'
+                            }
+                            // onChange=""
+                            // value="0"
+                            readOnly={true}
+                          ></input>
+                          <button
+                            onClick={() =>
+                              toggleActivity(index, activity.name, 'add')
+                            }
+                            className="bg-gray-300 text-gray-600 hover:text-gray-700 hover:bg-gray-400 h-full w-20 rounded-r cursor-pointer"
+                          >
+                            <span className="m-auto text-2xl font-thin">+</span>
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  )
-                })}
+                    );
+                  })}
+                </div>
+
+                {/* Overtime */}
+                <div className="flex flex-wrap mt-2">
+                  <div className="w-full">
+                    <input
+                      className="mr-2 scale-125"
+                      name={'ot' + index}
+                      id={'ot0' + index}
+                      type="radio"
+                      value={1}
+                      checked={trip.ot === 1}
+                      onChange={() => updateOT(index, 1)}
+                    />
+                    <label for={'ot0' + index}>No Overtime</label>
+                  </div>
+                  <div className="w-full">
+                    <input
+                      className="mr-2 scale-125"
+                      name={'ot' + index}
+                      id={'ot1' + index}
+                      type="radio"
+                      value={1.5}
+                      checked={trip.ot === 1.5}
+                      onChange={() => updateOT(index, 1.5)}
+                    />
+                    <label for={'ot1' + index}>Overtime 1.5x</label>
+                  </div>
+                  <div className="w-full">
+                    <input
+                      className="mr-2 scale-125"
+                      name={'ot' + index}
+                      id={'ot2' + index}
+                      type="radio"
+                      checked={trip.ot === 2}
+                      onChange={() => updateOT(index, 2)}
+                    />
+                    <label for={'ot2' + index}>Overtime 2x</label>
+                  </div>
+                </div>
+
+                <p className="mt-2">
+                  <span className="font-bold">KM Cost:</span> {kmCost}
+                </p>
+                <p>
+                  <span className="font-bold">Meters Cost:</span> {meterCost}
+                </p>
+                <p>
+                  <span className="font-bold">Activities Cost:</span>{' '}
+                  {activityCost}
+                </p>
+                <p>
+                  <span className="font-bold">Trip Total:</span>{' '}
+                  {totalCost.toFixed(2)}
+                </p>
+                <p>
+                  <span className="font-bold">Selected Activities: </span>
+                  {trip.selectedActivities
+                    .map((activity) => `${activity.name} x${activity.count}`)
+                    .join(', ')}
+                </p>
+
+                {/* Remove trip button */}
+                <button
+                  onClick={() => removeTrip(index)}
+                  className="bg-orange-600 text- py-1 px-3 text-lg mt-2 mb-4"
+                >
+                  Remove Trip
+                </button>
               </div>
-
-              {/* Overtime */}
-              <div className="flex flex-wrap mt-2">
-                <div className="w-full">
-                  <input 
-                    className="mr-2 scale-125"
-                    name={"ot" + index}
-                    id={"ot0" + index}
-                    type="radio"
-                    value={1}
-                    checked={trip.ot === 1}
-                    onChange={() => updateOT(index, 1)}
-                  />
-                  <label for={"ot0" + index}>No Overtime</label>
-                </div>
-                <div className="w-full">
-                  <input 
-                    className="mr-2 scale-125"
-                    name={"ot" + index}
-                    id={"ot1" + index}
-                    type="radio"
-                    value={1.5}
-                    checked={trip.ot === 1.5}
-                    onChange={() => updateOT(index, 1.5)}
-                  />
-                  <label for={"ot1" + index}>Overtime 1.5x</label>
-                </div>
-                <div className="w-full">
-                  <input 
-                    className="mr-2 scale-125"
-                    name={"ot" + index}
-                    id={"ot2" + index}
-                    type="radio"
-                    checked={trip.ot === 2}
-                    onChange={() => updateOT(index, 2)}
-                  />
-                  <label for={"ot2" + index}>Overtime 2x</label>
-                </div>
-              </div>
-
-              <p className='mt-2'>
-                <span className="font-bold">KM Cost:</span> {kmCost}
-              </p>
-              <p>
-                <span className="font-bold">Meters Cost:</span> {meterCost}
-              </p>
-              <p>
-                <span className="font-bold">Activities Cost:</span> {activityCost}
-              </p>
-              <p>
-                <span className="font-bold">Trip Total:</span> {totalCost.toFixed(2)}
-              </p>
-              <p>
-                <span className="font-bold">Selected Activities:{' '}</span>
-                {trip.selectedActivities.map((activity) => `${activity.name} x${activity.count}`).join(', ')}
-              </p>
-
-              {/* Remove trip button */}
-              <button 
-                onClick={() => removeTrip(index)}
-                className="bg-emerald-600 text- py-1 px-3 text-lg mt-2 mb-4"  
-              >Remove Trip</button>
-            </div>
-          )})}
+            );
+          })}
 
           {/* Add trip button */}
           <button
             className="bg-emerald-600 text- py-1 px-3 text-lg"
             onClick={addTrip}
-          >Add Trip</button>
+          >
+            Add Trip
+          </button>
 
           {/* Total cost */}
-          <button 
+          <button
             onClick={() => calculateTotalCost()}
             className="bg-emerald-600 block py-1 px-3 text-lg my-2"
-          >Calculate Totals</button>
+          >
+            Calculate Totals
+          </button>
         </div>
 
         {calcTotalCost && (
           <div>
             {Object.entries(calcTotalCost.tripKms).map((kms, idx) => {
-							return (
-								<p key={idx}>
-								 	<span className="font-bold">Driver {kms[1].distance} km @ {kms[0]}: </span> {kms[1].cost.toFixed(2)}
-								</p>
-							)
+              return (
+                <p key={idx}>
+                  <span className="font-bold">
+                    Driver {kms[1].distance} km @ {kms[0]}:{' '}
+                  </span>{' '}
+                  {kms[1].cost.toFixed(2)}
+                </p>
+              );
             })}
 
-            {Object.entries(calcTotalCost.totalCostPerProduct).map((product, idx) => {
-							const rate = calculateProductCost(product[0]);
+            {Object.entries(calcTotalCost.totalCostPerProduct).map(
+              (product, idx) => {
+                const rate = calculateProductCost(product[0]);
 
-							if (product.length < 2) return <></>;
-							return (
-								<p key={idx}>
-									<span className="font-bold">Pumped {product[0]} @ {rate}: </span> {Number(product[1]).toFixed(2)}
-								</p>
-							)
-						})}
+                if (product.length < 2) return <></>;
+                return (
+                  <p key={idx}>
+                    <span className="font-bold">
+                      Pumped {product[0]} @ {rate}:{' '}
+                    </span>{' '}
+                    {Number(product[1]).toFixed(2)}
+                  </p>
+                );
+              }
+            )}
 
-						{calcTotalCost.totalActivityCost !== 0 && (
-							<p><span className="font-bold">Activity Minutes: </span>{calcTotalCost.totalActivityCost.toFixed(2)}</p>
-						)}
+            {calcTotalCost.totalActivityCost !== 0 && (
+              <p>
+                <span className="font-bold">Activity Minutes: </span>
+                {calcTotalCost.totalActivityCost.toFixed(2)}
+              </p>
+            )}
           </div>
         )}
       </div>
