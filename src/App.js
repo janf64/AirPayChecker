@@ -11,21 +11,8 @@ function App() {
   const [startDayChecked, setStartDayChecked] = useState(false);
   const [calcTotalCost, setCalcTotalCost] = useState(null);
 
-  const calculateTripCost = (distance) => {
-		const rate = calculateDistanceRate(distance); 
-    if (distance <= 160) {
-      return rate * distance;
-    } else if (distance <= 360) {
-      return rate * distance;
-    } else if (distance <= 1000) {
-      return rate * distance;
-    } else {
-      return rate * distance;
-    }
-  };
-
 	const calculateDistanceRate = (distance) => {
-		if (distance <= 160) {
+    if (distance <= 160) {
       return 0.7064;
     } else if (distance <= 360) {
       return 0.6646;
@@ -34,7 +21,7 @@ function App() {
     } else {
       return 0.54;
     }
-	}
+  };
 
   const calculateProductCost = (product) => {
     if (product === 'Argon') {
@@ -79,7 +66,16 @@ function App() {
   ];
 
   const addTrip = () => {
-    setTrips([...trips, { distance: '', product: '', metersDelivered: '', selectedActivities: [], ot: 1 }]);
+    setTrips([
+      ...trips,
+      {
+        distance: '',
+        product: '',
+        metersDelivered: '',
+        selectedActivities: [],
+        ot: 1,
+      },
+    ]);
   };
 
   const updateTripDistance = (index, distance) => {
@@ -96,7 +92,8 @@ function App() {
 
   const updateTripMetersDelivered = (index, metersDelivered) => {
     const updatedTrips = [...trips];
-    updatedTrips[index].metersDelivered = metersDelivered === '' ? '' : Number(metersDelivered);
+    updatedTrips[index].metersDelivered =
+      metersDelivered === '' ? '' : Number(metersDelivered);
     setTrips(updatedTrips);
   };
 
@@ -109,8 +106,13 @@ function App() {
   const toggleActivity = (tripIndex, activity, type) => {
     const updatedTrips = [...trips];
     const trip = updatedTrips[tripIndex];
-    const activityIndex = trip.selectedActivities.findIndex((a) => a.name === activity);
-    const count = activityIndex !== -1 ? trip.selectedActivities[activityIndex].count : '-1';
+    const activityIndex = trip.selectedActivities.findIndex(
+      (a) => a.name === activity
+    );
+    const count =
+      activityIndex !== -1
+        ? trip.selectedActivities[activityIndex].count
+        : '-1';
 
     if (type === 'add' && activityIndex === -1) {
       trip.selectedActivities.push({ name: activity, count: 1 });
@@ -118,9 +120,9 @@ function App() {
       trip.selectedActivities[activityIndex].count++;
     } else if (activityIndex !== -1 && count >= 1) {
       trip.selectedActivities[activityIndex].count--;
-			if (count === 1) {
-				trip.selectedActivities.splice(activityIndex, 1);
-			}
+      if (count === 1) {
+        trip.selectedActivities.splice(activityIndex, 1);
+      }
     }
 
     setTrips(updatedTrips);
@@ -130,7 +132,7 @@ function App() {
     const updatedTrips = [...trips];
     updatedTrips[tripIndex].ot = otValue;
     setTrips(updatedTrips);
-  }
+  };
 
   const calculateActivitiesCostForTrip = (trip) => {
     let activitiesCost = 0;
@@ -150,14 +152,13 @@ function App() {
       const startDayRatePerMinute = 0.6803;
       activitiesCost += startDayRatePerMinute * 36;
     }
-    
 
     trip.selectedActivities.forEach((activity) => {
       const selectedActivity = activities.find((a) => a.name === activity.name);
-      const activityDuration = selectedActivity ? selectedActivity.duration * activity.count : 0;
+      const activityDuration = selectedActivity
+        ? selectedActivity.duration * activity.count
+        : 0;
       activitiesCost += activityDuration * 0.6803 * trip.ot; // 0.6313 cents per minute
-
-      
     });
 
     return activitiesCost;
@@ -166,44 +167,51 @@ function App() {
   const calculateTotalCost = () => {
     const tripKms = {};
     const totalCostPerProduct = {};
-		let totalActivityCost = 0;
+    let totalActivityCost = 0;
 
     trips.forEach((trip) => {
-			const distance = Number(trip.distance);
-      const productCost = trip.metersDelivered * calculateProductCost(trip.product);
+      const distance = Number(trip.distance);
+      const productCost =
+        trip.metersDelivered * calculateProductCost(trip.product);
       const activitiesCost = calculateActivitiesCostForTrip(trip);
-			totalActivityCost += activitiesCost;
-			const distRate = calculateDistanceRate(distance);
+      totalActivityCost += activitiesCost;
+      const distRate = calculateDistanceRate(distance);
 
-			if (distance !== 0) {
-				if (!tripKms[distRate]) {
+      if (distance !== 0) {
+        if (!tripKms[distRate]) {
           tripKms[distRate] = {
             distance: distance,
             cost: distRate * distance,
-          }
-				} else {
+          };
+        } else {
           tripKms[distRate].distance += distance;
           tripKms[distRate].cost += distRate * distance;
-				}
-			}
+        }
+      }
 
-			if (trip.product !== '') {
-				// Update total cost per product
-				if (!totalCostPerProduct[trip.product]) {
-					totalCostPerProduct[trip.product] = Number(productCost.toFixed(2));
-				} else {
-					totalCostPerProduct[trip.product] += Number(productCost.toFixed(2));
-				}
-			}
+      if (trip.product !== '') {
+        // Update total cost per product
+        if (!totalCostPerProduct[trip.product]) {
+          totalCostPerProduct[trip.product] = Number(productCost.toFixed(2));
+        } else {
+          totalCostPerProduct[trip.product] += Number(productCost.toFixed(2));
+        }
+      }
     });
-
 
     setCalcTotalCost({
       tripKms,
       totalCostPerProduct,
-			totalActivityCost,
+      totalActivityCost,
     });
   };
+
+  const totalTripsCost = trips.reduce((acc, trip) => {
+    const kmCost = trip.distance * calculateDistanceRate(trip.distance);
+    const meterCost = trip.metersDelivered * calculateProductCost(trip.product);
+    const activityCost = calculateActivitiesCostForTrip(trip);
+    return acc + kmCost + meterCost + activityCost;
+  }, 0);
 
   return (
     <div className="App">
@@ -215,7 +223,9 @@ function App() {
 
           {/* Trip inputs */}
           {trips.map((trip, index) => {
-            const kmCost = calculateTripCost(trip.distance).toFixed(2);
+            const kmCost = (
+              trip.distance * calculateDistanceRate(trip.distance)
+            ).toFixed(2);
             const meterCost = (
               trip.metersDelivered * calculateProductCost(trip.product)
             ).toFixed(2);
@@ -455,9 +465,19 @@ function App() {
                 {calcTotalCost.totalActivityCost.toFixed(2)}
               </p>
             )}
+
+            <p className="font-bold mt-2">
+              Total Cost:
+              <span className="border-emerald-600 p-1 ml-1 border-b-2">
+                {totalTripsCost.toFixed(2)}
+              </span>
+            </p>
           </div>
         )}
       </div>
+      <footer className="mt-4 mb-4 pt-3 border-t border-gray-600 text-center text-xs text-gray-400">
+        <span>— ALC —</span>
+      </footer>
     </div>
   );
 }
