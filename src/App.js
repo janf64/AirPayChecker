@@ -3,12 +3,12 @@ import './App.css';
 
 function App() {
   const [trips, setTrips] = useState([]);
-  const [deliveryCount, setDeliveryCount] = useState(0);
-  const [loadTrailerMinutes, setLoadTrailerMinutes] = useState(0);
-  const [loadTrailerDelayMinutes, setLoadTrailerDelayMinutes] = useState(0);
-  const [ot1_5Checked, setOT1_5Checked] = useState(false);
-  const [ot2Checked, setOT2Checked] = useState(false);
-  const [startDayChecked, setStartDayChecked] = useState(false);
+  const [deliveryCount] = useState(0);
+  const [loadTrailerMinutes] = useState(0);
+  const [loadTrailerDelayMinutes] = useState(0);
+  const [ot1_5Checked] = useState(false);
+  const [ot2Checked] = useState(false);
+  const [startDayChecked] = useState(false);
   const [calcTotalCost, setCalcTotalCost] = useState(null);
 
 	const calculateDistanceRate = (distance) => {
@@ -65,6 +65,14 @@ function App() {
     // { name: '2xDay ', duration: 1 },
   ];
 
+  const [activityCounts, setActivityCounts] = useState(() => {
+    const initialCounts = {};
+    activities.forEach((activity) => {
+      initialCounts[activity.name] = 0;
+    });
+    return initialCounts;
+  });
+
   const addTrip = () => {
     setTrips([
       ...trips,
@@ -72,8 +80,6 @@ function App() {
         distance: '',
         product: '',
         metersDelivered: '',
-        selectedActivities: [],
-        ot: 1,
       },
     ]);
   };
@@ -103,63 +109,51 @@ function App() {
     setTrips(updatedTrips);
   };
 
-  const toggleActivity = (tripIndex, activity, type) => {
-    const updatedTrips = [...trips];
-    const trip = updatedTrips[tripIndex];
-    const activityIndex = trip.selectedActivities.findIndex(
-      (a) => a.name === activity
-    );
-    const count =
-      activityIndex !== -1
-        ? trip.selectedActivities[activityIndex].count
-        : '-1';
+  const handleActivityCountChange = (activityName, type) => {
+    setActivityCounts((prevCounts) => {
+      const updatedCounts = { ...prevCounts };
+      const currentValue = updatedCounts[activityName] || 0;
 
-    if (type === 'add' && activityIndex === -1) {
-      trip.selectedActivities.push({ name: activity, count: 1 });
-    } else if (type === 'add' && activityIndex !== -1) {
-      trip.selectedActivities[activityIndex].count++;
-    } else if (activityIndex !== -1 && count >= 1) {
-      trip.selectedActivities[activityIndex].count--;
-      if (count === 1) {
-        trip.selectedActivities.splice(activityIndex, 1);
+      if (type === 'add') {
+        updatedCounts[activityName] = currentValue + 1;
+      } else if (type === 'sub' && currentValue > 0) {
+        updatedCounts[activityName] = currentValue - 1;
       }
-    }
 
-    setTrips(updatedTrips);
+      return updatedCounts;
+    });
   };
 
-  const updateOT = (tripIndex, otValue) => {
-    const updatedTrips = [...trips];
-    updatedTrips[tripIndex].ot = otValue;
-    setTrips(updatedTrips);
-  };
-
-  const calculateActivitiesCostForTrip = (trip) => {
+  const calculateGlobalActivitiesCost = () => {
+    const perMinuteRate = 0.6803;
     let activitiesCost = 0;
+
     activitiesCost += deliveryCount * 13.61;
     activitiesCost += loadTrailerMinutes * 40.82;
-    activitiesCost += loadTrailerDelayMinutes * 0.6803;
+    activitiesCost += loadTrailerDelayMinutes * perMinuteRate;
 
-    if (ot1_5Checked) {
-      activitiesCost *= 1.5;
-    }
+    const overtimeMultiplier =
+      (ot1_5Checked ? 1.5 : 1) * (ot2Checked ? 2 : 1);
 
-    if (ot2Checked) {
-      activitiesCost *= 2;
-    }
+    const activityMinutesCost = Object.entries(activityCounts).reduce(
+      (total, [activityName, count]) => {
+        if (count <= 0) return total;
+        const matchingActivity = activities.find(
+          (activity) => activity.name === activityName
+        );
+        const activityDuration = matchingActivity
+          ? matchingActivity.duration * count
+          : 0;
+        return total + activityDuration * perMinuteRate;
+      },
+      0
+    );
+
+    activitiesCost = (activitiesCost + activityMinutesCost) * overtimeMultiplier;
 
     if (startDayChecked) {
-      const startDayRatePerMinute = 0.6803;
-      activitiesCost += startDayRatePerMinute * 36;
+      activitiesCost += perMinuteRate * 36;
     }
-
-    trip.selectedActivities.forEach((activity) => {
-      const selectedActivity = activities.find((a) => a.name === activity.name);
-      const activityDuration = selectedActivity
-        ? selectedActivity.duration * activity.count
-        : 0;
-      activitiesCost += activityDuration * 0.6803 * trip.ot; // 0.6313 cents per minute
-    });
 
     return activitiesCost;
   };
@@ -167,14 +161,12 @@ function App() {
   const calculateTotalCost = () => {
     const tripKms = {};
     const totalCostPerProduct = {};
-    let totalActivityCost = 0;
+    const totalActivityCost = calculateGlobalActivitiesCost();
 
     trips.forEach((trip) => {
       const distance = Number(trip.distance);
       const productCost =
         trip.metersDelivered * calculateProductCost(trip.product);
-      const activitiesCost = calculateActivitiesCostForTrip(trip);
-      totalActivityCost += activitiesCost;
       const distRate = calculateDistanceRate(distance);
 
       if (distance !== 0) {
@@ -206,12 +198,13 @@ function App() {
     });
   };
 
-  const totalTripsCost = trips.reduce((acc, trip) => {
+  const tripsBaseCost = trips.reduce((acc, trip) => {
     const kmCost = trip.distance * calculateDistanceRate(trip.distance);
     const meterCost = trip.metersDelivered * calculateProductCost(trip.product);
-    const activityCost = calculateActivitiesCostForTrip(trip);
-    return acc + kmCost + meterCost + activityCost;
+    return acc + kmCost + meterCost;
   }, 0);
+
+  const totalTripsCost = tripsBaseCost + calculateGlobalActivitiesCost();
 
   return (
     <div className="App">
@@ -223,16 +216,11 @@ function App() {
 
           {/* Trip inputs */}
           {trips.map((trip, index) => {
-            const kmCost = (
-              trip.distance * calculateDistanceRate(trip.distance)
-            ).toFixed(2);
-            const meterCost = (
-              trip.metersDelivered * calculateProductCost(trip.product)
-            ).toFixed(2);
-            const activityCost =
-              calculateActivitiesCostForTrip(trip).toFixed(2);
-            const totalCost =
-              Number(kmCost) + Number(meterCost) + Number(activityCost);
+            const kmCost =
+              trip.distance * calculateDistanceRate(trip.distance);
+            const meterCost =
+              trip.metersDelivered * calculateProductCost(trip.product);
+            const totalCost = kmCost + meterCost;
 
             return (
               <div key={index} className="block my-2">
@@ -261,7 +249,7 @@ function App() {
                   >
                     <option value="">Select Product</option>
                     {products.map((opt, productIndex) => (
-                      <option key={productIndex} value={opt[0]}>
+                      <option key={opt[0]} value={opt[0]}>
                         {opt[0]}
                       </option>
                     ))}
@@ -283,123 +271,17 @@ function App() {
                   />
                 </div>
 
-                {/* Activity checkboxes */}
-                <div className="flex flex-wrap">
-                  <label className="mt-2 mb-1.5 text-xl font-bold w-full">
-                    Activities:
-                  </label>
-                  {activities.map((activity, activityIndex) => {
-                    const selectedActivity = trip.selectedActivities.find(
-                      (a) => a.name === activity.name
-                    );
-                    const padding = activityIndex % 2 ? '' : 'pr-2';
-
-                    return (
-                      <div
-                        className={
-                          'custom-number-input flex items-center w-1/2 ' +
-                          padding
-                        }
-                      >
-                        <label
-                          key={activityIndex}
-                          for="custom-input-number"
-                          className="w-24 h-4 mr-2 text-sm font-semibold"
-                        >
-                          {activity.name}
-                        </label>
-                        <div className="flex flex-row h-8 rounded-lg relative bg-transparent mt-1 w-24">
-                          <button
-                            onClick={() =>
-                              toggleActivity(index, activity.name, 'sub')
-                            }
-                            className=" bg-gray-300 text-gray-600 hover:text-gray-700 hover:bg-gray-400 h-full w-20 rounded-l cursor-pointer outline-none"
-                          >
-                            <span className="m-auto text-2xl font-thin">−</span>
-                          </button>
-                          <input
-                            type="number"
-                            className="rounded-none outline-none focus:outline-none text-center w-full bg-gray-300 font-semibold text-md hover:text-black focus:text-black  md:text-basecursor-default flex items-center text-gray-700"
-                            name="custom-input-number"
-                            value={
-                              selectedActivity ? selectedActivity.count : '0'
-                            }
-                            // onChange=""
-                            // value="0"
-                            readOnly={true}
-                          ></input>
-                          <button
-                            onClick={() =>
-                              toggleActivity(index, activity.name, 'add')
-                            }
-                            className="bg-gray-300 text-gray-600 hover:text-gray-700 hover:bg-gray-400 h-full w-20 rounded-r cursor-pointer"
-                          >
-                            <span className="m-auto text-2xl font-thin">+</span>
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* Overtime */}
-                <div className="flex flex-wrap mt-2">
-                  <div className="w-full">
-                    <input
-                      className="mr-2 scale-125"
-                      name={'ot' + index}
-                      id={'ot0' + index}
-                      type="radio"
-                      value={1}
-                      checked={trip.ot === 1}
-                      onChange={() => updateOT(index, 1)}
-                    />
-                    <label for={'ot0' + index}>No Overtime</label>
-                  </div>
-                  <div className="w-full">
-                    <input
-                      className="mr-2 scale-125"
-                      name={'ot' + index}
-                      id={'ot1' + index}
-                      type="radio"
-                      value={1.5}
-                      checked={trip.ot === 1.5}
-                      onChange={() => updateOT(index, 1.5)}
-                    />
-                    <label for={'ot1' + index}>Overtime 1.5x</label>
-                  </div>
-                  <div className="w-full">
-                    <input
-                      className="mr-2 scale-125"
-                      name={'ot' + index}
-                      id={'ot2' + index}
-                      type="radio"
-                      checked={trip.ot === 2}
-                      onChange={() => updateOT(index, 2)}
-                    />
-                    <label for={'ot2' + index}>Overtime 2x</label>
-                  </div>
-                </div>
-
                 <p className="mt-2">
-                  <span className="font-bold">KM Cost:</span> {kmCost}
+                  <span className="font-bold">KM Cost:</span>{' '}
+                  {kmCost.toFixed(2)}
                 </p>
                 <p>
-                  <span className="font-bold">Meters Cost:</span> {meterCost}
-                </p>
-                <p>
-                  <span className="font-bold">Activities Cost:</span>{' '}
-                  {activityCost}
+                  <span className="font-bold">Meters Cost:</span>{' '}
+                  {meterCost.toFixed(2)}
                 </p>
                 <p>
                   <span className="font-bold">Trip Total:</span>{' '}
                   {totalCost.toFixed(2)}
-                </p>
-                <p>
-                  <span className="font-bold">Selected Activities: </span>
-                  {trip.selectedActivities
-                    .map((activity) => `${activity.name} x${activity.count}`)
-                    .join(', ')}
                 </p>
 
                 {/* Remove trip button */}
@@ -421,6 +303,68 @@ function App() {
             Add Trip
           </button>
 
+          {/* Global activity selector */}
+          <div className="mt-4">
+            <label className="mt-6 mb-1.5 text-xl font-bold block">
+              Activities:
+            </label>
+            <div className="flex flex-wrap">
+              {activities.map((activity, activityIndex) => {
+                const padding = activityIndex % 2 ? '' : 'pr-2';
+                const activityCount = activityCounts[activity.name] || 0;
+
+                return (
+                  <div
+                    className={
+                      'custom-number-input flex items-center w-1/2 ' + padding
+                    }
+                    key={activity.name}
+                  >
+                    <label
+                      key={activityIndex}
+                      htmlFor={`activity-${activityIndex}`}
+                      className="w-24 h-4 mr-2 text-sm font-semibold"
+                    >
+                      {activity.name}
+                    </label>
+                    <div className="flex flex-row h-8 rounded-lg relative bg-transparent mt-1 w-24">
+                      <button
+                        onClick={() =>
+                          handleActivityCountChange(activity.name, 'sub')
+                        }
+                        className=" bg-gray-300 text-gray-600 hover:text-gray-700 hover:bg-gray-400 h-full w-20 rounded-l cursor-pointer outline-none"
+                      >
+                        <span className="m-auto text-2xl font-thin">−</span>
+                      </button>
+                      <input
+                        id={`activity-${activityIndex}`}
+                        type="number"
+                        className="rounded-none outline-none focus:outline-none text-center w-full bg-gray-300 font-semibold text-md hover:text-black focus:text-black md:text-basecursor-default flex items-center text-gray-700"
+                        value={activityCount}
+                        readOnly={true}
+                      />
+                      <button
+                        onClick={() =>
+                          handleActivityCountChange(activity.name, 'add')
+                        }
+                        className="bg-gray-300 text-gray-600 hover:text-gray-700 hover:bg-gray-400 h-full w-20 rounded-r cursor-pointer"
+                      >
+                        <span className="m-auto text-2xl font-thin">+</span>
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <p className="mt-2">
+              <span className="font-bold">Selected Activities: </span>
+              {Object.entries(activityCounts)
+                .filter(([, count]) => count > 0)
+                .map(([name, count]) => `${name} x${count}`)
+                .join(', ') || 'None'}
+            </p>
+          </div>
+
           {/* Total cost */}
           <button
             onClick={() => calculateTotalCost()}
@@ -429,54 +373,55 @@ function App() {
             Calculate Totals
           </button>
         </div>
-
-        {calcTotalCost && (
-          <div>
-            {Object.entries(calcTotalCost.tripKms).map((kms, idx) => {
-              return (
-                <p key={idx}>
-                  <span className="font-bold">
-                    Driver {kms[1].distance} km @ {kms[0]}:{' '}
-                  </span>{' '}
-                  {kms[1].cost.toFixed(2)}
-                </p>
-              );
-            })}
-
-            {Object.entries(calcTotalCost.totalCostPerProduct).map(
-              (product, idx) => {
-                const rate = calculateProductCost(product[0]);
-
-                if (product.length < 2) return <></>;
+        <React.Fragment>
+          {calcTotalCost && (
+            <div>
+              {Object.entries(calcTotalCost.tripKms).map((kms, idx) => {
                 return (
-                  <p key={idx}>
+                  <p key={kms[0]}>
                     <span className="font-bold">
-                      Pumped {product[0]} @ {rate}:{' '}
+                      Driver {kms[1].distance} km @ {kms[0]}:{' '}
                     </span>{' '}
-                    {Number(product[1]).toFixed(2)}
+                    {kms[1].cost.toFixed(2)}
                   </p>
                 );
-              }
-            )}
+              })}
 
-            {calcTotalCost.totalActivityCost !== 0 && (
-              <p>
-                <span className="font-bold">Activity Minutes: </span>
-                {calcTotalCost.totalActivityCost.toFixed(2)}
+              {Object.entries(calcTotalCost.totalCostPerProduct).map(
+                (product, idx) => {
+                  const rate = calculateProductCost(product[0]);
+
+                  if (product.length < 2) return <></>;
+                  return (
+                    <p key={idx}>
+                      <span className="font-bold">
+                        Pumped {product[0]} @ {rate}:{' '}
+                      </span>{' '}
+                      {Number(product[1]).toFixed(2)}
+                    </p>
+                  );
+                }
+              )}
+
+              {calcTotalCost.totalActivityCost !== 0 && (
+                <p>
+                  <span className="font-bold">Activity Minutes: </span>
+                  {calcTotalCost.totalActivityCost.toFixed(2)}
+                </p>
+              )}
+
+              <p className="font-bold mt-2">
+                Total:
+                <span className="border-emerald-600 p-1 ml-1 border-b-2">
+                  {totalTripsCost.toFixed(2)}
+                </span>
               </p>
-            )}
-
-            <p className="font-bold mt-2">
-              Total Cost:
-              <span className="border-emerald-600 p-1 ml-1 border-b-2">
-                {totalTripsCost.toFixed(2)}
-              </span>
-            </p>
-          </div>
-        )}
+            </div>
+          )}
+        </React.Fragment>
       </div>
       <footer className="mt-4 mb-4 pt-3 border-t border-gray-600 text-center text-xs text-gray-400">
-        <span>— ALC —</span>
+        <span>— ALC {new Date().getFullYear()} —</span>
       </footer>
     </div>
   );
