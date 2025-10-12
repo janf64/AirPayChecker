@@ -13,25 +13,25 @@ function App() {
 
 	const calculateDistanceRate = (distance) => {
     if (distance <= 160) {
-      return 0.7064;
+      return 0.7354;
     } else if (distance <= 360) {
-      return 0.6646;
+      return 0.692;
     } else if (distance <= 1000) {
-      return 0.6027;
+      return 0.6275;
     } else {
-      return 0.54;
+      return 0.5622;
     }
   };
 
   const calculateProductCost = (product) => {
     if (product === 'Argon') {
-      return 0.004996;
+      return 0.005201;
     } else if (product === 'CO2') {
-      return 0.003413;
+      return 0.003554;
     } else if (product === 'Oxygen' || product === 'Nitrogen') {
-      return 0.00388;
+      return 0.004039;
     } else if (product === 'N2o') {
-      return 0.003466;
+      return 0.003609;
     } else {
       return 0;
     }
@@ -125,11 +125,11 @@ function App() {
   };
 
   const calculateGlobalActivitiesCost = () => {
-    const perMinuteRate = 0.6803;
+    const perMinuteRate = 0.7107;
     let activitiesCost = 0;
 
-    activitiesCost += deliveryCount * 13.61;
-    activitiesCost += loadTrailerMinutes * 40.82;
+    activitiesCost += deliveryCount * 14.21;
+    activitiesCost += loadTrailerMinutes * 42.64;
     activitiesCost += loadTrailerDelayMinutes * perMinuteRate;
 
     const overtimeMultiplier =
@@ -211,7 +211,7 @@ function App() {
       <div className="p-4">
         <div className="hide-from-print">
           <h1 className="text-4xl mb-4 font-bold">
-            ALC Pay Calculator 10/23 rates
+            ALC Pay Calculator
           </h1>
 
           {/* Trip inputs */}
@@ -421,7 +421,7 @@ function App() {
         </React.Fragment>
       </div>
       <footer className="mt-4 mb-4 pt-3 border-t border-gray-600 text-center text-xs text-gray-400">
-        <span>— ALC {new Date().getFullYear()} —</span>
+        <span>— Jan 905-516-3832   ALC {new Date().getFullYear()} —</span>
       </footer>
     </div>
   );
