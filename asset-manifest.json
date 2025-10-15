@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/AirPayChecker/static/css/main.d8d4fcbf.css",
-    "main.js": "/AirPayChecker/static/js/main.3201447d.js",
-    "static/js/787.a174f9e5.chunk.js": "/AirPayChecker/static/js/787.a174f9e5.chunk.js",
+    "main.css": "/AirPayChecker/static/css/main.3d4f0beb.css",
+    "main.js": "/AirPayChecker/static/js/main.db230883.js",
+    "static/js/430.3ccaa01d.chunk.js": "/AirPayChecker/static/js/430.3ccaa01d.chunk.js",
     "index.html": "/AirPayChecker/index.html",
-    "main.d8d4fcbf.css.map": "/AirPayChecker/static/css/main.d8d4fcbf.css.map",
-    "main.3201447d.js.map": "/AirPayChecker/static/js/main.3201447d.js.map",
-    "787.a174f9e5.chunk.js.map": "/AirPayChecker/static/js/787.a174f9e5.chunk.js.map"
+    "main.3d4f0beb.css.map": "/AirPayChecker/static/css/main.3d4f0beb.css.map",
+    "main.db230883.js.map": "/AirPayChecker/static/js/main.db230883.js.map",
+    "430.3ccaa01d.chunk.js.map": "/AirPayChecker/static/js/430.3ccaa01d.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.d8d4fcbf.css",
-    "static/js/main.3201447d.js"
+    "static/css/main.3d4f0beb.css",
+    "static/js/main.db230883.js"
   ]
 }
