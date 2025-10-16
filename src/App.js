@@ -13,25 +13,25 @@ function App() {
 
 	const calculateDistanceRate = (distance) => {
     if (distance <= 160) {
-      return 0.7354;
+      return 0.7682;
     } else if (distance <= 360) {
-      return 0.692;
+      return 0.7229;
     } else if (distance <= 1000) {
-      return 0.6275;
+      return 0.6555;
     } else {
-      return 0.5622;
+      return 0.5873;
     }
   };
 
   const calculateProductCost = (product) => {
     if (product === 'Argon') {
-      return 0.005201;
+      return 0.005385;
     } else if (product === 'CO2') {
-      return 0.003554;
+      return 0.003713;
     } else if (product === 'Oxygen' || product === 'Nitrogen') {
-      return 0.004039;
+      return 0.004219;
     } else if (product === 'N2o') {
-      return 0.003609;
+      return 0.003770;
     } else {
       return 0;
     }
@@ -61,8 +61,8 @@ function App() {
     { name: 'PupCylTrlr ', duration: 25 },
     { name: 'DelayMin ', duration: 1 },
     { name: 'DelayMin10 ', duration: 10 },
-    // { name: '1.5xDay ', duration: 1 },
-    // { name: '2xDay ', duration: 1 },
+     //{ name: '1.5xDay ', duration: 1 },
+     //{ name: '2xDay ', duration: 1 },
   ];
 
   const [activityCounts, setActivityCounts] = useState(() => {
@@ -125,11 +125,11 @@ function App() {
   };
 
   const calculateGlobalActivitiesCost = () => {
-    const perMinuteRate = 0.7107;
+    const perMinuteRate = 0.7368;
     let activitiesCost = 0;
 
-    activitiesCost += deliveryCount * 14.21;
-    activitiesCost += loadTrailerMinutes * 42.64;
+    activitiesCost += deliveryCount * 14.74;
+    activitiesCost += loadTrailerMinutes * 44.21;
     activitiesCost += loadTrailerDelayMinutes * perMinuteRate;
 
     const overtimeMultiplier =
