@@ -6,8 +6,8 @@ function App() {
   const [deliveryCount] = useState(0);
   const [loadTrailerMinutes] = useState(0);
   const [loadTrailerDelayMinutes] = useState(0);
-  const [ot1_5Checked] = useState(false);
-  const [ot2Checked] = useState(false);
+  const [ot1_5Checked, setOt1_5Checked] = useState(false);
+  const [ot2Checked, setOt2Checked] = useState(false);
   const [startDayChecked] = useState(false);
   const [calcTotalCost, setCalcTotalCost] = useState(null);
 
@@ -124,7 +124,21 @@ function App() {
     });
   };
 
+  const handleOvertimeChange = (multiplier) => {
+    if (multiplier === 1.5) {
+      setOt1_5Checked(true);
+      setOt2Checked(false);
+    } else if (multiplier === 2) {
+      setOt1_5Checked(false);
+      setOt2Checked(true);
+    } else {
+      setOt1_5Checked(false);
+      setOt2Checked(false);
+    }
+  };
+
   const calculateGlobalActivitiesCost = () => {
+<<<<<<< HEAD
     const perMinuteRate = 0.7368;
     let activitiesCost = 0;
 
@@ -134,6 +148,13 @@ function App() {
 
     const overtimeMultiplier =
       (ot1_5Checked ? 1.5 : 1) * (ot2Checked ? 2 : 1);
+=======
+    const perMinuteRate = 0.7107;
+    const baseActivitiesCost =
+      deliveryCount * 14.21 +
+      loadTrailerMinutes * 42.64 +
+      loadTrailerDelayMinutes * perMinuteRate;
+>>>>>>> 34adb7fe37ffba38edd5609b687f956eaf1f6af7
 
     const activityMinutesCost = Object.entries(activityCounts).reduce(
       (total, [activityName, count]) => {
@@ -149,13 +170,16 @@ function App() {
       0
     );
 
-    activitiesCost = (activitiesCost + activityMinutesCost) * overtimeMultiplier;
+    const overtimeMultiplier = ot2Checked ? 2 : ot1_5Checked ? 1.5 : 1;
+
+    let totalActivitiesCost =
+      baseActivitiesCost + activityMinutesCost * overtimeMultiplier;
 
     if (startDayChecked) {
-      activitiesCost += perMinuteRate * 36;
+      totalActivitiesCost += perMinuteRate * 36;
     }
 
-    return activitiesCost;
+    return totalActivitiesCost;
   };
 
   const calculateTotalCost = () => {
@@ -363,6 +387,46 @@ function App() {
                 .map(([name, count]) => `${name} x${count}`)
                 .join(', ') || 'None'}
             </p>
+            <div className="mt-4">
+              <span className="block text-sm font-semibold mb-2">
+                Overtime:
+              </span>
+              <div className="flex space-x-4 text-sm text-white">
+                <label className="flex items-center space-x-1">
+                  <input
+                    type="radio"
+                    name="activity-overtime"
+                    value="none"
+                    checked={!ot1_5Checked && !ot2Checked}
+                    onChange={() => handleOvertimeChange(null)}
+                    className="text-emerald-600 focus:ring-emerald-600"
+                  />
+                  <span>None</span>
+                </label>
+                <label className="flex items-center space-x-1">
+                  <input
+                    type="radio"
+                    name="activity-overtime"
+                    value="1.5"
+                    checked={ot1_5Checked}
+                    onChange={() => handleOvertimeChange(1.5)}
+                    className="text-emerald-600 focus:ring-emerald-600"
+                  />
+                  <span>1.5x OT</span>
+                </label>
+                <label className="flex items-center space-x-1">
+                  <input
+                    type="radio"
+                    name="activity-overtime"
+                    value="2"
+                    checked={ot2Checked}
+                    onChange={() => handleOvertimeChange(2)}
+                    className="text-emerald-600 focus:ring-emerald-600"
+                  />
+                  <span>2x OT</span>
+                </label>
+              </div>
+            </div>
           </div>
 
           {/* Total cost */}
