@@ -13,25 +13,25 @@ function App() {
 
 	const calculateDistanceRate = (distance) => {
     if (distance <= 160) {
-      return 0.7682;
+      return 0.7886;
     } else if (distance <= 360) {
-      return 0.7229;
+      return 0.742;
     } else if (distance <= 1000) {
-      return 0.6555;
+      return 0.6729;
     } else {
-      return 0.5873;
+      return 0.6028;
     }
   };
 
   const calculateProductCost = (product) => {
     if (product === 'Argon') {
-      return 0.005385;
+      return 0.0056;
     } else if (product === 'CO2') {
-      return 0.003713;
+      return 0.0038;
     } else if (product === 'Oxygen' || product === 'Nitrogen') {
-      return 0.004219;
+      return 0.0044;
     } else if (product === 'N2o') {
-      return 0.003770;
+      return 0.0038;
     } else {
       return 0;
     }
@@ -138,23 +138,11 @@ function App() {
   };
 
   const calculateGlobalActivitiesCost = () => {
-<<<<<<< HEAD
-    const perMinuteRate = 0.7368;
-    let activitiesCost = 0;
-
-    activitiesCost += deliveryCount * 14.74;
-    activitiesCost += loadTrailerMinutes * 44.21;
-    activitiesCost += loadTrailerDelayMinutes * perMinuteRate;
-
-    const overtimeMultiplier =
-      (ot1_5Checked ? 1.5 : 1) * (ot2Checked ? 2 : 1);
-=======
-    const perMinuteRate = 0.7107;
+    const perMinuteRate = 0.7648;
     const baseActivitiesCost =
-      deliveryCount * 14.21 +
-      loadTrailerMinutes * 42.64 +
+      deliveryCount * 20 * perMinuteRate +
+      loadTrailerMinutes * 60 * perMinuteRate +
       loadTrailerDelayMinutes * perMinuteRate;
->>>>>>> 34adb7fe37ffba38edd5609b687f956eaf1f6af7
 
     const activityMinutesCost = Object.entries(activityCounts).reduce(
       (total, [activityName, count]) => {
