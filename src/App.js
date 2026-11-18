@@ -473,7 +473,7 @@ function App() {
         </React.Fragment>
       </div>
       <footer className="mt-4 mb-4 pt-3 border-t border-gray-600 text-center text-xs text-gray-400">
-        <span>— Jan 905-516-3832   ALC {new Date().getFullYear()} —</span>
+        <span>— Jan 905-516-3832   Oct 2027 rates —</span>
       </footer>
     </div>
   );
